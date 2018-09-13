@@ -67,13 +67,13 @@ class Map extends Component {
     this.remove(trip);
 
     // Create API reference.
-    const myApi = new API({url: process.env.API_URL});
+    const api = new API({url: process.env.API_URL});
     
     // Query parameter.
-    myApi.create_entity({ name: 'trip'});
+    api.create_entity({ name: 'trip'});
 
     // GET request for a specific date.
-    myApi.endpoints.trip.get_one({id: trip})
+    api.endpoints.trip.get_one({id: trip})
     .then(result => result.json())
     .then(data => {
 

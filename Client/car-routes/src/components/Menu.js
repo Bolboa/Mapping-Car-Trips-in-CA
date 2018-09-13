@@ -16,13 +16,13 @@ class Menu extends Component {
   componentDidMount() {
 
   	// Create API reference.
-  	const myApi = new API({url: process.env.API_URL});
+  	const api = new API({url: process.env.API_URL});
   	
   	// Query parameter.
-  	myApi.create_entity({ name: 'dates'});
+  	api.create_entity({ name: 'dates'});
 
   	// GET request for all dates.
-  	myApi.endpoints.dates.get_all()
+  	api.endpoints.dates.get_all()
   	.then(result => result.json())
   	.then(data => {
 
