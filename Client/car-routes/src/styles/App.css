@@ -1,0 +1,99 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 80px;
+}
+
+.App-header {
+  background-color: #222;
+  height: 150px;
+  padding: 20px;
+  color: white;
+}
+
+.App-title {
+  font-size: 1.5em;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+ul {
+  width: 100%;
+  max-width: 300px;
+  max-height: 400px;
+  list-style-type: none;
+  display: table;
+  margin: 0;
+  padding: 0;
+}
+
+ul li {
+  padding: 25px;
+  background: #de6135;
+  color: #fff;
+  border-top: solid 1px #ff7849;
+  cursor: pointer;
+}
+
+ul li:hover {
+  background: #c8512f;
+}
+
+.menu-title{
+  font-size: 25px;
+}
+
+.menu {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.menu-wrap {
+  -webkit-box-shadow: 10px 10px 115px -31px rgba(0,0,0,0.75);
+  -moz-box-shadow: 10px 10px 115px -31px rgba(0,0,0,0.75);
+  box-shadow: 10px 10px 115px -31px rgba(0,0,0,0.75);
+  color: white;
+  background: #c8512f;
+  right: 20px;
+  margin-top: 50px;
+  position: absolute;
+  z-index: 3;
+}
+
+.map {
+  text-align: left;
+}
+
+.trip_details {
+    position: absolute;
+    z-index: 2;
+    color: white;
+    max-width: 200px;
+    width: 100%;
+    max-height: 400px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.trip_wrap {
+  cursor: pointer;
+}
+
+.trip_wrap:hover {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.trip_p {
+  margin: 0;
+}
+
+.inner_wrap {
+  padding: 10px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
