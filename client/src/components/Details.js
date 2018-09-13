@@ -23,7 +23,7 @@ class Details extends Component {
   /*
   Tells parent (Map Class) to remove an active trip from the map.
   */
-  remove(key) {
+  toggle_trip(key) {
     this.props.remove_animation_handler(key);
   }
 
@@ -37,7 +37,7 @@ class Details extends Component {
       <div className="canvas_trip">
       <div className="trip_details">{
         Object.keys(mapping).map((key, i) => {
-          if (this.props.status[key] == false) {
+          if (this.props.status.has(key) == true) {
             return (
             <div className="trip_wrap" onClick={ () => this.update_map(mapping[key].lat, mapping[key].long)}>
               <div className="inner_wrap">
@@ -48,7 +48,7 @@ class Details extends Component {
                 <p className="trip_p">{Math.round(mapping[key].d_l * 100) / 100 } miles left</p>
 
                 <p className="trip_p">D: {mapping[key].duration[0]} H:{mapping[key].duration[1]} M:{mapping[key].duration[2]} S:{mapping[key].duration[3]}</p>
-                <button onClick={() => this.remove(key)}>X</button>
+                <button onClick={() => this.toggle_trip(key)}>X</button>
               </div>
             </div>
             )} 

@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
-import ReactMapGL from 'react-map-gl';
-import * as turf from '@turf/turf';
-import Details from './Details';
-import API from '../utils/API';
+import React, { Component } from "react";
+import ReactMapGL from "react-map-gl";
+import * as turf from "@turf/turf";
+import Details from "./Details";
+import API from "../utils/API";
 
 var car = require('../resources/merc.png');
 
@@ -20,11 +20,10 @@ class Map extends Component {
         zoom: 10,
         maxZoom: 15
       },
-      map: null,
       all_trips: {},
-      status: {},
       alter: 90,
-      time_per_step: 1000
+      time_per_step: 1000,
+      active_trips: new Set()
     };
   }
 
@@ -57,14 +56,16 @@ class Map extends Component {
   Gets the trip details and performs an animation of a point along a route.
   */
   get_trip(trip) {
-    
+
     // Get map details.
     const map = this.reactMap.getMap();
 
     // We must keep track of how many times the button to create a trip is pressed.
     // The first time it is pressed, we must create a trip. The second time it is pressed, we
     // must remove the trip if still exits.
-    this.remove(trip);
+    if (this.toggle_trip(trip) == false) {
+      return
+    }
 
     // Create API reference.
     const api = new API({url: process.env.API_URL});
@@ -128,19 +129,16 @@ class Map extends Component {
       var counter = 0;
 
       // We need unique IDs for every new route and car.
-      var route_id = 'route' + trip;
-      var point_id = 'point' + trip;
+      var route_id = "route" + trip;
+      var point_id = "point" + trip;
 
-      // If this trip does not currently exist, add the coordinates for the trip.
-      if (this.state.status[trip] == false) {
-
-        // Define the route.
-        this.create_route(map, route, route_id);
-
-        // Define the initial coordinates of the car.
-        this.create_point(map, point, point_id, car);
       
-      }
+      // Define the route.
+      this.create_route(map, route, route_id);
+
+      // Define the initial coordinates of the car.
+      this.create_point(map, point, point_id, car);
+
 
       // Total length of trip.
       var seconds = data.coords.length - 2;
@@ -148,20 +146,27 @@ class Map extends Component {
       // Get car details.
       var source_pt = map.getSource(point_id);
 
-      // Animation.
-      var timer = function() {
+      // Helper to keep track of frame rate.
+      var last = 0;
 
-        counter += 1;       
+      // Animation.
+      var animate = function(current) {  
         
         // Stop the animation if we reach the end of the route.
         // Also stop the animation if the user requests it to end.
-        if (counter >= route.features[0].geometry.coordinates.length || this.state.status[trip] == true || source_pt == undefined) {
-          clearInterval(interval);
+        if (counter < route.features[0].geometry.coordinates.length && 
+          this.state.active_trips.has(trip) == true) {
+          requestAnimationFrame(animate);
         } 
-        else {
+        
+        // The frame rate is 1 second.
+        if (current >= (last + 1000)) {
+
+          counter += 1;  
 
           // Time left.
           var time = this.duration(seconds);
+          seconds -= 1;
 
           // Make copy of immutable object.
           let new_trip_details = Object.assign({}, this.state.all_trips);
@@ -178,9 +183,6 @@ class Map extends Component {
           new_trip_details[trip] = curr_trip;
           this.setState({all_trips: new_trip_details});
 
-          // Decrement time left to destination.
-          seconds -= 1;
-
           // Move from current coordinate to the next coordinate.    
           point.features[0].geometry.coordinates = route.features[0].geometry.coordinates[counter];
           
@@ -193,25 +195,20 @@ class Map extends Component {
           // Extract the bearing.
           var bearing = point.features[0].properties.bearing;
 
-          // Some rotation is required as the car is not aligned with the route
-          // by default.
-          if ((bearing + this.state.alter) > 180) {
-            var new_calc = (bearing + this.state.alter) - 360;
-            point.features[0].properties.bearing = new_calc;
-          }
-          else {
-            point.features[0].properties.bearing += this.state.alter;
-          }
+          // Rotate the car so that it is aligned with its route.
+          point.features[0].properties.bearing = this.rotate_bearing(bearing);
 
           // Move to the next point.
           source_pt.setData(point);
 
-          }
+          // Update the current frame rate.
+          last = current;
+        }
 
-        }.bind(this);
+      }.bind(this)
 
-        // Start the animation.
-        var interval = setInterval(timer, this.state.time_per_step);
+      // Start the animation.
+      animate()
         
     })
     .catch(e => {
@@ -220,6 +217,23 @@ class Map extends Component {
       return e;
 
     });
+
+  }
+
+
+  /*
+  Rotate the car so that it is aligned with its route.
+  */
+  rotate_bearing(bearing) {
+    
+    // When we alter it, we must ensure that it remains within
+    // the range of [-180, 180].
+    if ((bearing + this.state.alter) > 180) {
+      var new_calc = (bearing + this.state.alter) - 360;
+      return new_calc;
+    }
+
+    return bearing + this.state.alter;
 
   }
 
@@ -296,39 +310,41 @@ class Map extends Component {
 
 
   /*
-  Remove an active trip from the map.
+  Toggle a trip on the map.
   */
-  remove(key) {
+  toggle_trip(key) {
 
     // Get map.
     const map = this.reactMap.getMap();
 
-    // Check if trip is active or not. The status of its activation is logged
-    // for each trip.
-    if (this.state.status[key] == undefined || this.state.status[key] == true) {
-      
-      let status_details = Object.assign({}, this.state.status);
-      // Reverse the status.
-      status_details[key] = false;
+    // Check if trip is active or not. If it is active, we
+    // remove it, otherwise we add it into the pool of active trips.
+    if (this.state.active_trips.has(key) == false) {
 
-      this.setState({status: status_details});
+      // Add trip because it is not active.
+      this.setState(({active_trips}) => ({
+        active_trips: new Set(active_trips.add(key))
+      }))
+
     }
     else {
-      
-      let status_details = Object.assign({}, this.state.status);
-      
-      // Reverse the status.
-      status_details[key] = true;
-      
-      // Remove the trip from the map.
-      this.setState({
-        status: status_details
-      }, () => {
-        map.removeLayer("route"+key);
-        map.removeLayer("point"+key);
-        map.removeSource("route"+key);
-        map.removeSource("point"+key);
+
+        // Remove trip from the pool of active trips.
+        this.setState(({ active_trips }) => {
+        active_trips.delete(key)
+
+        return {
+         active_trips: new Set(active_trips)
+        };
       });
+
+      // Remove trip from the map.
+      map.removeLayer("route"+key);
+      map.removeLayer("point"+key);
+      map.removeSource("route"+key);
+      map.removeSource("point"+key);
+      
+      return false;
 
     }
   }
@@ -339,10 +355,10 @@ class Map extends Component {
     return (
       <div>
         <Details 
-          status={this.state.status} 
+          status={this.state.active_trips} 
           mapping={this.state.all_trips} 
           mapping_handler={(lat, long) => this.update_map(lat, long)} 
-          remove_animation_handler={(key) => this.remove(key)}
+          remove_animation_handler={(key) => this.toggle_trip(key)}
         />
 
         <div className="map">
