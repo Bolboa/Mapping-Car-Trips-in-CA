@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import API from './API.js';
+import API from '../utils/API.js';
 import '../styles/App.css';
 
 

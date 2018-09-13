@@ -43,6 +43,7 @@ module.exports = {
     	'process.env': {
         NODE_ENV: JSON.stringify(process.env.NODE_ENV),
         API_URL: JSON.stringify(process.env.API_URL),
+        ACCESS_TOKEN: JSON.stringify(process.env.ACCESS_TOKEN)
       }
   	})
   ]

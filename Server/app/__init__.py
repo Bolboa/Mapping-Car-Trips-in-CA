@@ -1,9 +1,11 @@
 from flask import Flask
 from flask_pymongo import PyMongo
 from flask_migrate import Migrate
+from config import Config
+
 
 app = Flask(__name__)
-app.config["MONGO_URI"] = "mongodb://XXX:XXX@ds255332.mlab.com:55332/car-routes"
+app.config.from_object(Config)
 mongo = PyMongo(app)
 
 

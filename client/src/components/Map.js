@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactMapGL from 'react-map-gl';
 import * as turf from '@turf/turf';
 import Details from './Details';
-import API from './API';
+import API from '../utils/API';
 
 var car = require('../resources/merc.png');
 
@@ -335,30 +335,26 @@ class Map extends Component {
 
 
   render() {
-    const mapping = Object.assign({}, this.state.all_trips);
+
     return (
-
       <div>
-      <Details 
-        status={this.state.status} 
-        mapping={this.state.all_trips} 
-        mapping_handler={(lat, long) => this.update_map(lat, long)} 
-        remove_animation_handler={(key) => this.remove(key)}
-      />
+        <Details 
+          status={this.state.status} 
+          mapping={this.state.all_trips} 
+          mapping_handler={(lat, long) => this.update_map(lat, long)} 
+          remove_animation_handler={(key) => this.remove(key)}
+        />
 
-      <div className="map">
-        <ReactMapGL
-          ref={(reactMap) => { this.reactMap = reactMap; }}
-          {...this.state.viewport}
-          mapStyle={'mapbox://styles/mapbox/basic-v9'}
-          mapboxApiAccessToken={"pk.eyJ1IjoiYm9sYm9hIiwiYSI6ImNqbHE0MHQ0dTJiemgzcm4zN3A2NjkyNXYifQ.OYEtZo6vhsw_DLsWPhYYBA"}
-          onViewportChange={(viewport) => this.setState({viewport})}
-        >
-        </ReactMapGL>
-        
-      
-        
-      </div></div>
+        <div className="map">
+          <ReactMapGL
+            ref={(reactMap) => { this.reactMap = reactMap; }}
+            {...this.state.viewport}
+            mapStyle={'mapbox://styles/mapbox/basic-v9'}
+            mapboxApiAccessToken={process.env.ACCESS_TOKEN}
+            onViewportChange={(viewport) => this.setState({viewport})}
+          /> 
+        </div>
+      </div>
     );
   }
 }
