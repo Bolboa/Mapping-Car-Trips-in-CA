@@ -23,6 +23,7 @@ class Map extends Component {
       all_trips: {},
       alter: 90,
       time_per_step: 1000,
+      doubling_limit: 6,
       active_trips: new Set()
     };
   }
@@ -51,6 +52,39 @@ class Map extends Component {
     return [days, hours, minutes, seconds];
 
   }
+
+  /*
+  Calculate the midpoint between two sets of coordinates.
+  */
+  middle_point(coord1, coord2) {
+
+    var long1 = coord1[0];
+    var lat1 = coord1[1];
+
+    var long2 = coord2[0];
+    var lat2 = coord2[1]
+
+    // Longitude difference.
+    var d_long = (long2 - long1) * Math.PI / 180;
+
+    // Convert to radians.
+    lat1 = lat1 * Math.PI / 180;
+    lat2 = lat2 * Math.PI / 180;
+    long1 = long1 * Math.PI / 180;
+
+    // The math is hard to comprehend, but essentially we must take into account that
+    // the coordinates represent points on a spherical surface.
+    var b_x = Math.cos(lat2) * Math.cos(d_long);
+    var b_y = Math.cos(lat2) * Math.sin(d_long);
+    
+    var lat3 = Math.atan2(Math.sin(lat1) + Math.sin(lat2), Math.sqrt((Math.cos(lat1) + b_x) * (Math.cos(lat1) + b_x) + b_y * b_y)); 
+    var long3 = long1 + Math.atan2(b_y, Math.cos(lat1) + b_x);
+
+    // Return result.
+    return [long3 * 180/Math.PI, lat3 * 180/Math.PI];
+
+  }
+
 
   /*
   Gets the trip details and performs an animation of a point along a route.
@@ -93,11 +127,23 @@ class Map extends Component {
         total_dist.push([data.coords[i].dist]);
         total_speed.push([data.coords[i].speed]);
       }
+   
+      // Calculate midoints for a smoother animation.
+      for (var i=0; i<this.state.doubling_limit; i++) {
+        var extended_coords = [];
+        for (var j=0; j<total_coords.length; j++) {
+          if (j > 0) {
+            extended_coords.push(this.middle_point(total_coords[j-1], total_coords[j]));
+          }
+          extended_coords.push(total_coords[j]);
+        }
+        total_coords = extended_coords;
+      }
+      
       
       // Change the viewport to the newest trip added.
       this.update_map(total_coords[0][1], total_coords[0][0]);
       
-
       // Define the coordinates of the route being added.
       var route = {
         "type": "FeatureCollection",
@@ -125,8 +171,11 @@ class Map extends Component {
         }]
       };
 
-      // Counter used to move along a path.
+      // Counter used to move the point along a path.
       var counter = 0;
+
+      // Counter used to update the details of every route.
+      var details_counter = 0;
 
       // We need unique IDs for every new route and car.
       var route_id = "route" + trip;
@@ -149,20 +198,22 @@ class Map extends Component {
       // Helper to keep track of frame rate.
       var last = 0;
 
+      var details_timer = 0;
+
       // Animation.
       var animate = function(current) {  
         
         // Stop the animation if we reach the end of the route.
         // Also stop the animation if the user requests it to end.
-        if (counter < route.features[0].geometry.coordinates.length && 
+        if (counter < total_dist.length && 
           this.state.active_trips.has(trip) == true) {
           requestAnimationFrame(animate);
         } 
-        
-        // The frame rate is 1 second.
-        if (current >= (last + 1000)) {
 
-          counter += 1;  
+        // Update the details of each route every second.
+        if (current >= (details_timer + 1000)) {
+          
+          counter += 1;
 
           // Time left.
           var time = this.duration(seconds);
@@ -183,13 +234,22 @@ class Map extends Component {
           new_trip_details[trip] = curr_trip;
           this.setState({all_trips: new_trip_details});
 
+          details_timer = current
+
+        }
+        
+        // The frame rate is 1/5 seconds.
+        if (current >= (last + 62)) {
+
+          details_counter += 1;          
+
           // Move from current coordinate to the next coordinate.    
-          point.features[0].geometry.coordinates = route.features[0].geometry.coordinates[counter];
+          point.features[0].geometry.coordinates = route.features[0].geometry.coordinates[details_counter];
           
           // Calculate the bearing so that it moves relative to the route. 
           point.features[0].properties.bearing = turf.bearing(
-            turf.point(route.features[0].geometry.coordinates[counter >= route.features[0].geometry.coordinates.length-1 ? counter - 1 : counter]),
-            turf.point(route.features[0].geometry.coordinates[counter >= route.features[0].geometry.coordinates.length-1 ? counter : counter + 1])
+            turf.point(route.features[0].geometry.coordinates[details_counter >= route.features[0].geometry.coordinates.length-1 ? details_counter - 1 : details_counter]),
+            turf.point(route.features[0].geometry.coordinates[details_counter >= route.features[0].geometry.coordinates.length-1 ? details_counter : details_counter + 1])
           );
 
           // Extract the bearing.
@@ -286,7 +346,7 @@ class Map extends Component {
               "icon-image": "image",
               "icon-rotate": ["get", "bearing"],
               "icon-rotation-alignment": "map",
-              "icon-size": 0.1,
+              "icon-size": 0.05,
               "icon-allow-overlap": true,
               "icon-ignore-placement": true
           }
@@ -299,12 +359,12 @@ class Map extends Component {
   Move the map to a specific set of coordinates.
   */
   update_map(lat, long) {
-      
-      // Change the viewport to the current trip selected.
-      let new_viewport = Object.assign({}, this.state.viewport);
-      new_viewport.latitude = lat;
-      new_viewport.longitude = long;
-      this.setState({viewport: new_viewport});
+
+    // Change the viewport to the current trip selected.
+    let new_viewport = Object.assign({}, this.state.viewport);
+    new_viewport.latitude = lat;
+    new_viewport.longitude = long;
+    this.setState({viewport: new_viewport});
 
   }
 

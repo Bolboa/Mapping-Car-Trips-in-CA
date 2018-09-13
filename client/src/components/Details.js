@@ -31,23 +31,23 @@ class Details extends Component {
   render() {
     
     // Copy of animation details.
-    const mapping = Object.assign({}, this.props.mapping);
+    //const mapping = Object.assign({}, this.props.mapping);
     
     return (
       <div className="canvas_trip">
       <div className="trip_details">{
-        Object.keys(mapping).map((key, i) => {
+        Object.keys(this.props.mapping).map((key, i) => {
           if (this.props.status.has(key) == true) {
             return (
-            <div className="trip_wrap" onClick={ () => this.update_map(mapping[key].lat, mapping[key].long)}>
+            <div className="trip_wrap" onClick={ () => this.update_map(this.props.mapping[key].lat, this.props.mapping[key].long)}>
               <div className="inner_wrap">
                 <p className="trip_p">{key}</p>
                 <p className="trip_p">
-                  {mapping[key].speed && Math.round(mapping[key].speed[0] * 100) / 100 } MPH
+                  {this.props.mapping[key].speed && Math.round(this.props.mapping[key].speed[0] * 100) / 100 } MPH
                 </p>
-                <p className="trip_p">{Math.round(mapping[key].d_l * 100) / 100 } miles left</p>
+                <p className="trip_p">{Math.round(this.props.mapping[key].d_l * 100) / 100 } miles left</p>
 
-                <p className="trip_p">D: {mapping[key].duration[0]} H:{mapping[key].duration[1]} M:{mapping[key].duration[2]} S:{mapping[key].duration[3]}</p>
+                <p className="trip_p">D: {this.props.mapping[key].duration[0]} H:{this.props.mapping[key].duration[1]} M:{this.props.mapping[key].duration[2]} S:{this.props.mapping[key].duration[3]}</p>
                 <button onClick={() => this.toggle_trip(key)}>X</button>
               </div>
             </div>
