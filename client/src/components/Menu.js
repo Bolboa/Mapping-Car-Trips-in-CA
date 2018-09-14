@@ -29,6 +29,7 @@ class Menu extends Component {
   		// Save all dates in state.
   		// This is used to populate the menu.
   		this.setState({menu: data.names});
+      
   	})
   	.catch(e => {
   		console.log(e);

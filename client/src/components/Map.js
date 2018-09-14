@@ -35,19 +35,19 @@ class Map extends Component {
   duration(delta) {
 
     // Calculate days.
-    var days = Math.floor(delta / 86400);
+    let days = Math.floor(delta / 86400);
     delta -= days * 86400;
 
     // Calculate hours.
-    var hours = Math.floor(delta / 3600) % 24;
+    let hours = Math.floor(delta / 3600) % 24;
     delta -= hours * 3600;
 
     // Calculate minutes.
-    var minutes = Math.floor(delta / 60) % 60;
+    let minutes = Math.floor(delta / 60) % 60;
     delta -= minutes * 60;
 
     // Calculate seconds.
-    var seconds = delta % 60; 
+    let seconds = delta % 60; 
 
     return [days, hours, minutes, seconds];
 
@@ -58,14 +58,14 @@ class Map extends Component {
   */
   middle_point(coord1, coord2) {
 
-    var long1 = coord1[0];
-    var lat1 = coord1[1];
+    let long1 = coord1[0];
+    let lat1 = coord1[1];
 
-    var long2 = coord2[0];
-    var lat2 = coord2[1]
+    let long2 = coord2[0];
+    let lat2 = coord2[1]
 
     // Longitude difference.
-    var d_long = (long2 - long1) * Math.PI / 180;
+    let d_long = (long2 - long1) * Math.PI / 180;
 
     // Convert to radians.
     lat1 = lat1 * Math.PI / 180;
@@ -74,11 +74,11 @@ class Map extends Component {
 
     // The math is hard to comprehend, but essentially we must take into account that
     // the coordinates represent points on a spherical surface.
-    var b_x = Math.cos(lat2) * Math.cos(d_long);
-    var b_y = Math.cos(lat2) * Math.sin(d_long);
+    let b_x = Math.cos(lat2) * Math.cos(d_long);
+    let b_y = Math.cos(lat2) * Math.sin(d_long);
     
-    var lat3 = Math.atan2(Math.sin(lat1) + Math.sin(lat2), Math.sqrt((Math.cos(lat1) + b_x) * (Math.cos(lat1) + b_x) + b_y * b_y)); 
-    var long3 = long1 + Math.atan2(b_y, Math.cos(lat1) + b_x);
+    let lat3 = Math.atan2(Math.sin(lat1) + Math.sin(lat2), Math.sqrt((Math.cos(lat1) + b_x) * (Math.cos(lat1) + b_x) + b_y * b_y)); 
+    let long3 = long1 + Math.atan2(b_y, Math.cos(lat1) + b_x);
 
     // Return result.
     return [long3 * 180/Math.PI, lat3 * 180/Math.PI];
@@ -113,25 +113,25 @@ class Map extends Component {
     .then(data => {
 
       // Total distance travelled.
-      var total_dist = [];
+      let total_dist = [];
 
       // All recorded speeds.
-      var total_speed = [];
+      let total_speed = [];
 
       // All recorded coordinates.
-      var total_coords = [];
+      let total_coords = [];
 
       // Get trip details.
-      for (var i=0; i<data.coords.length; i++) {
+      for (let i=0; i<data.coords.length; i++) {
         total_coords.push([data.coords[i].lng, data.coords[i].lat]);
         total_dist.push([data.coords[i].dist]);
         total_speed.push([data.coords[i].speed]);
       }
    
       // Calculate midoints for a smoother animation.
-      for (var i=0; i<this.state.doubling_limit; i++) {
-        var extended_coords = [];
-        for (var j=0; j<total_coords.length; j++) {
+      for (let i=0; i<this.state.doubling_limit; i++) {
+        let extended_coords = [];
+        for (let j=0; j<total_coords.length; j++) {
           if (j > 0) {
             extended_coords.push(this.middle_point(total_coords[j-1], total_coords[j]));
           }
@@ -172,14 +172,14 @@ class Map extends Component {
       };
 
       // Counter used to move the point along a path.
-      var counter = 0;
+      let counter = 0;
 
       // Counter used to update the details of every route.
-      var details_counter = 0;
+      let details_counter = 0;
 
       // We need unique IDs for every new route and car.
-      var route_id = "route" + trip;
-      var point_id = "point" + trip;
+      const route_id = "route" + trip;
+      const point_id = "point" + trip;
 
       
       // Define the route.
@@ -190,18 +190,18 @@ class Map extends Component {
 
 
       // Total length of trip.
-      var seconds = data.coords.length - 2;
+      let seconds = data.coords.length - 2;
       
       // Get car details.
-      var source_pt = map.getSource(point_id);
+      let source_pt = map.getSource(point_id);
 
       // Helper to keep track of frame rate.
-      var last = 0;
+      let last = 0;
 
-      var details_timer = 0;
+      let details_timer = 0;
 
       // Animation.
-      var animate = function(current) {  
+      const animate = function(current) {  
         
         // Stop the animation if we reach the end of the route.
         // Also stop the animation if the user requests it to end.
@@ -216,7 +216,7 @@ class Map extends Component {
           counter += 1;
 
           // Time left.
-          var time = this.duration(seconds);
+          let time = this.duration(seconds);
           seconds -= 1;
 
           // Make copy of immutable object.
@@ -253,7 +253,7 @@ class Map extends Component {
           );
 
           // Extract the bearing.
-          var bearing = point.features[0].properties.bearing;
+          let bearing = point.features[0].properties.bearing;
 
           // Rotate the car so that it is aligned with its route.
           point.features[0].properties.bearing = this.rotate_bearing(bearing);
@@ -289,7 +289,7 @@ class Map extends Component {
     // When we alter it, we must ensure that it remains within
     // the range of [-180, 180].
     if ((bearing + this.state.alter) > 180) {
-      var new_calc = (bearing + this.state.alter) - 360;
+      let new_calc = (bearing + this.state.alter) - 360;
       return new_calc;
     }
 
