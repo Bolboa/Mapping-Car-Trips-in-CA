@@ -143,6 +143,7 @@ class Map extends Component {
       
       // Change the viewport to the newest trip added.
       this.update_map(total_coords[0][1], total_coords[0][0]);
+
       
       // Define the coordinates of the route being added.
       var route = {
@@ -170,6 +171,7 @@ class Map extends Component {
             }
         }]
       };
+
 
       // Counter used to move the point along a path.
       let counter = 0;
@@ -199,6 +201,7 @@ class Map extends Component {
       let last = 0;
 
       let details_timer = 0;
+
 
       // Animation.
       const animate = function(current) {  
@@ -414,7 +417,8 @@ class Map extends Component {
 
     return (
       <div>
-        <Details 
+        <Details
+          translate={this.props.translate} 
           status={this.state.active_trips} 
           mapping={this.state.all_trips} 
           mapping_handler={(lat, long) => this.update_map(lat, long)} 
