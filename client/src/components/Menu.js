@@ -14,7 +14,6 @@ class Menu extends Component {
   */
   click_handler(e) {
 
-    console.log(e.target.id)
   	// Call parent function.
   	this.props.onClick(e.target.id);
 

@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css?family=Montserrat");
+@import url("https://api.tiles.mapbox.com/mapbox-gl-js/v0.49.0/mapbox-gl.css");
 
 .App {
   text-align: center;

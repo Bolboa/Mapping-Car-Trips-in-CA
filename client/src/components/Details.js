@@ -36,7 +36,7 @@ class Details extends Component {
         Object.keys(this.props.mapping).map((key, i) => {
           if (this.props.status.has(key) == true) {
             return (
-            <div className="trip_wrap" onClick={ () => this.update_map(this.props.mapping[key].lat, this.props.mapping[key].long)}>
+            <div key={i} className="trip_wrap" onClick={ () => this.update_map(this.props.mapping[key].lat, this.props.mapping[key].long)}>
               <div className="inner_wrap">
                 <div className="wrap_title">
                   <p className="trip_p trip_title">{this.props.translate[key]}</p>
