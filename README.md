@@ -8,4 +8,4 @@ Accurately mapping car trips in California.
 * React
 * Python (Flask)
 * MongoDB
-* MapBox (react-gl-map)
+* MapBox (react-map-gl)
