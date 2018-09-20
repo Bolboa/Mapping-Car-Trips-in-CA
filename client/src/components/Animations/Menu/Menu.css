@@ -1,0 +1,53 @@
+
+
+.App {
+  text-align: center;
+}
+
+ul {
+  width: 100%;
+  max-width: 300px;
+  max-height: 400px;
+  list-style-type: none;
+  display: table;
+  margin: 0;
+  padding: 0;
+}
+
+ul li {
+  min-width: 180px;
+  padding: 25px;
+  background: white;
+  color: black;
+  border-top: solid 1px #20939940;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+}
+
+ul li:hover {
+  background: rgba(32,147,153, 0.2);
+}
+
+.menu-title{
+  font-size: 25px;
+  font-family: 'Montserrat', sans-serif;
+  color: black;
+
+}
+
+.menu {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.menu-wrap {
+  -webkit-box-shadow: 10px 10px 115px -31px rgba(0,0,0,0.75);
+  -moz-box-shadow: 10px 10px 115px -31px rgba(0,0,0,0.75);
+  box-shadow: 10px 10px 115px -31px rgba(0,0,0,0.75);
+  background: white;
+  color: black;
+  right: 20px;
+  margin-top: 50px;
+  position: absolute;
+  z-index: 3;
+}

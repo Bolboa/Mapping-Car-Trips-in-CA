@@ -1,10 +1,13 @@
 import React, { Component } from "react";
 import ReactMapGL from "react-map-gl";
 import * as turf from "@turf/turf";
-import Details from "./Details";
-import API from "../utils/API";
+import Details from "../Details/Details";
+import API from "../../../utils/API";
+import "./Map.css";
 
-var car = require('../resources/merc.png');
+
+// Car design used for the animations.
+const car = require('./resources/merc.png');
 
 
 class Map extends Component {
@@ -30,33 +33,50 @@ class Map extends Component {
 
 
   /*
-  Calculate the amount of time left for a point to reach its destination.
+  Toggle a trip on the map.
   */
-  duration(delta) {
+  toggle_trip = (key) => {
 
-    // Calculate days.
-    let days = Math.floor(delta / 86400);
-    delta -= days * 86400;
+    // Get map.
+    const map = this.reactMap.getMap();
 
-    // Calculate hours.
-    let hours = Math.floor(delta / 3600) % 24;
-    delta -= hours * 3600;
+    // Check if trip is active or not. If it is active, we
+    // remove it, otherwise we add it into the pool of active trips.
+    if (this.state.active_trips.has(key) == false) {
 
-    // Calculate minutes.
-    let minutes = Math.floor(delta / 60) % 60;
-    delta -= minutes * 60;
+      // Add trip because it is not active.
+      this.setState(({active_trips}) => ({
+        active_trips: new Set(active_trips.add(key))
+      }))
 
-    // Calculate seconds.
-    let seconds = delta % 60; 
+    }
+    else {
 
-    return [days, hours, minutes, seconds];
+        // Remove trip from the pool of active trips.
+        this.setState(({ active_trips }) => {
+        active_trips.delete(key)
 
+        return {
+         active_trips: new Set(active_trips)
+        };
+      });
+
+      // Remove trip from the map.
+      map.removeLayer("route"+key);
+      map.removeLayer("point"+key);
+      map.removeSource("route"+key);
+      map.removeSource("point"+key);
+      
+      return false;
+
+    }
   }
+
 
   /*
   Calculate the midpoint between two sets of coordinates.
   */
-  middle_point(coord1, coord2) {
+  middle_point = (coord1, coord2) => {
 
     let long1 = coord1[0];
     let lat1 = coord1[1];
@@ -87,9 +107,122 @@ class Map extends Component {
 
 
   /*
+  Move the map to a specific set of coordinates.
+  */
+  update_map = (lat, long) => {
+
+    // Change the viewport to the current trip selected.
+    let new_viewport = Object.assign({}, this.state.viewport);
+    new_viewport.latitude = lat;
+    new_viewport.longitude = long;
+    this.setState({viewport: new_viewport});
+
+  }
+
+
+    /*
+  Create new route for the map.
+  */
+  create_route = (map, route, id) => {
+    
+    // Define the route.
+    map.addSource(id, {
+        "type": "geojson",
+        "data": route
+    });
+    
+    // Draw the route.
+    map.addLayer({
+      "id": id,
+      "source": id,
+      "type": "line",
+      "paint": {
+          "line-width": 2,
+          "line-color": "#007cbf"
+      }
+    });
+
+  }
+
+
+  /*
+  Define a point.
+  */
+  create_point = (map, point, id, image) => {
+
+    // Define the starting coordinate of the point.
+    map.addSource(id, {
+      "type": "geojson",
+      "data": point
+    });
+
+    // Load an image to replace the point.
+    map.loadImage(image, function(error, image) {
+      if (error) throw error;
+      map.addImage('image', image);
+      map.addLayer({
+          "id": id,
+          "type": "symbol",
+          "source": id,
+          "layout": {
+              "icon-image": "image",
+              "icon-rotate": ["get", "bearing"],
+              "icon-rotation-alignment": "map",
+              "icon-size": 0.05,
+              "icon-allow-overlap": true,
+              "icon-ignore-placement": true
+          }
+      });
+    });
+  }
+
+
+    /*
+  Calculate the amount of time left for a point to reach its destination.
+  */
+  duration = (delta) => {
+
+    // Calculate days.
+    let days = Math.floor(delta / 86400);
+    delta -= days * 86400;
+
+    // Calculate hours.
+    let hours = Math.floor(delta / 3600) % 24;
+    delta -= hours * 3600;
+
+    // Calculate minutes.
+    let minutes = Math.floor(delta / 60) % 60;
+    delta -= minutes * 60;
+
+    // Calculate seconds.
+    let seconds = delta % 60; 
+
+    return [days, hours, minutes, seconds];
+
+  }
+
+
+  /*
+  Rotate the car so that it is aligned with its route.
+  */
+  rotate_bearing = (bearing) => {
+    
+    // When we alter it, we must ensure that it remains within
+    // the range of [-180, 180].
+    if ((bearing + this.state.alter) > 180) {
+      let new_calc = (bearing + this.state.alter) - 360;
+      return new_calc;
+    }
+
+    return bearing + this.state.alter;
+
+  }
+
+
+  /*
   Gets the trip details and performs an animation of a point along a route.
   */
-  get_trip(trip) {
+  get_trip = (trip) => {
 
     // Get map details.
     const map = this.reactMap.getMap();
@@ -98,6 +231,10 @@ class Map extends Component {
     // The first time it is pressed, we must create a trip. The second time it is pressed, we
     // must remove the trip if still exits.
     if (this.toggle_trip(trip) == false) {
+
+      // Move to the spot where the car was last seen.
+      this.update_map(this.state.all_trips[trip].lat, this.state.all_trips[trip].long);
+      
       return
     }
 
@@ -204,7 +341,7 @@ class Map extends Component {
 
 
       // Animation.
-      const animate = function(current) {  
+      const animate = (current) => {  
         
         // Stop the animation if we reach the end of the route.
         // Also stop the animation if the user requests it to end.
@@ -268,7 +405,7 @@ class Map extends Component {
           last = current;
         }
 
-      }.bind(this)
+      }
 
       // Start the animation.
       animate()
@@ -281,135 +418,6 @@ class Map extends Component {
 
     });
 
-  }
-
-
-  /*
-  Rotate the car so that it is aligned with its route.
-  */
-  rotate_bearing(bearing) {
-    
-    // When we alter it, we must ensure that it remains within
-    // the range of [-180, 180].
-    if ((bearing + this.state.alter) > 180) {
-      let new_calc = (bearing + this.state.alter) - 360;
-      return new_calc;
-    }
-
-    return bearing + this.state.alter;
-
-  }
-
-
-  /*
-  Create new route for the map.
-  */
-  create_route(map, route, id) {
-    
-    // Define the route.
-    map.addSource(id, {
-        "type": "geojson",
-        "data": route
-    });
-    
-    // Draw the route.
-    map.addLayer({
-      "id": id,
-      "source": id,
-      "type": "line",
-      "paint": {
-          "line-width": 2,
-          "line-color": "#007cbf"
-      }
-    });
-
-  }
-
-
-  /*
-  Define a point.
-  */
-  create_point(map, point, id, image) {
-
-    // Define the starting coordinate of the point.
-    map.addSource(id, {
-      "type": "geojson",
-      "data": point
-    });
-
-    // Load an image to replace the point.
-    map.loadImage(image, function(error, image) {
-      if (error) throw error;
-      map.addImage('image', image);
-      map.addLayer({
-          "id": id,
-          "type": "symbol",
-          "source": id,
-          "layout": {
-              "icon-image": "image",
-              "icon-rotate": ["get", "bearing"],
-              "icon-rotation-alignment": "map",
-              "icon-size": 0.05,
-              "icon-allow-overlap": true,
-              "icon-ignore-placement": true
-          }
-      });
-    });
-  }
-
-
-  /*
-  Move the map to a specific set of coordinates.
-  */
-  update_map(lat, long) {
-
-    // Change the viewport to the current trip selected.
-    let new_viewport = Object.assign({}, this.state.viewport);
-    new_viewport.latitude = lat;
-    new_viewport.longitude = long;
-    this.setState({viewport: new_viewport});
-
-  }
-
-
-  /*
-  Toggle a trip on the map.
-  */
-  toggle_trip(key) {
-
-    // Get map.
-    const map = this.reactMap.getMap();
-
-    // Check if trip is active or not. If it is active, we
-    // remove it, otherwise we add it into the pool of active trips.
-    if (this.state.active_trips.has(key) == false) {
-
-      // Add trip because it is not active.
-      this.setState(({active_trips}) => ({
-        active_trips: new Set(active_trips.add(key))
-      }))
-
-    }
-    else {
-
-        // Remove trip from the pool of active trips.
-        this.setState(({ active_trips }) => {
-        active_trips.delete(key)
-
-        return {
-         active_trips: new Set(active_trips)
-        };
-      });
-
-      // Remove trip from the map.
-      map.removeLayer("route"+key);
-      map.removeLayer("point"+key);
-      map.removeSource("route"+key);
-      map.removeSource("point"+key);
-      
-      return false;
-
-    }
   }
 
 

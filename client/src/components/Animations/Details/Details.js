@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import ReactMapGL from 'react-map-gl';
 import * as turf from '@turf/turf';
-
-var car = require('../resources/merc.png');
+import "./Details.css";
 
 
 class Details extends Component {
@@ -15,7 +14,7 @@ class Details extends Component {
   /*
   Tells parent (Map Class) to move the map to a specific set of coordinates.
   */
-  update_map(lat, long) {
+  update_map = (lat, long) => {
     this.props.mapping_handler(lat, long);
   }
 
@@ -23,7 +22,7 @@ class Details extends Component {
   /*
   Tells parent (Map Class) to remove an active trip from the map.
   */
-  toggle_trip(key) {
+  toggle_trip = (key) => {
     this.props.remove_animation_handler(key);
   }
 

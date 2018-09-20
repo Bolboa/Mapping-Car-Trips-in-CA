@@ -1,11 +1,10 @@
 import React, { Component } from "react";
-import Menu from "./Menu";
-import Map from "./Map";
-import API from "../utils/API.js";
-import "../styles/App.css";
+import API from "../../../utils/API";
+import "./Menu.css";
+import "../../../styles/App.css";
 
 
-class Home extends Component {
+class Menu extends Component {
 
   constructor(props) {
     super(props);
@@ -43,6 +42,9 @@ class Home extends Component {
       // Set the new states.
       this.setState({date_to_name: titles_mapping});
       this.setState({menu: menu_titles});
+
+      // Pass data to the parent component.
+      this.props.pass_dates_to_parent(menu_titles, titles_mapping);
       
     })
     .catch(e => {
@@ -53,21 +55,39 @@ class Home extends Component {
 
 
   /*
-  Starts an animation on the map.
+  References parent function.
   */
-  click_handler(id) {
-    this.map.get_trip(id)
+  click_handler = (e) => {
+
+  	// Call parent function.
+  	this.props.onClick(e.target.id);
+
   }
 
 
   render() {
+
+    // Menu is not loaded until the data is pulled.
+    if (!this.state.menu) {
+      return null;
+    }
+    
     return (
       <div className="App">
-        <Menu menu={this.state.menu} translate={this.state.date_to_name} onClick={(id) => this.click_handler(id)} />
-        <Map translate={this.state.date_to_name} ref={instance => { this.map = instance; }} />
+      <div className="menu-wrap">
+        <p className="menu-title">Trips</p>
+        <div className="menu">
+          <ul onClick={(e) => this.click_handler(e)} >
+            {this.state.menu && this.state.menu.map((date, index) => {
+              return <li id={date} key={index}>{this.state.date_to_name[date]}</li>;
+            })}
+          </ul>
+        </div>
+      </div>
+        
       </div>
     );
   }
 }
 
-export default Home;
+export default Menu;

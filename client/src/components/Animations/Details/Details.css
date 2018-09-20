@@ -1,0 +1,57 @@
+
+
+.trip_details {
+  -webkit-box-shadow: 10px 10px 115px -31px rgba(0,0,0,0.75);
+  -moz-box-shadow: 10px 10px 115px -31px rgba(0,0,0,0.75);
+  box-shadow: 10px 10px 115px -31px rgba(0,0,0,0.75);
+  margin-left: 20px;
+  margin-top: 30px;
+  position: absolute;
+  z-index: 2;
+  color: white;
+  max-width: 200px;
+  width: 100%;
+  max-height: 400px;
+  overflow-y: auto;
+  background: white;
+  color: black;
+}
+
+.trip_wrap {
+  cursor: pointer;
+}
+
+.trip_p {
+  padding: 5px;
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+}
+
+p.trip_p.trip_title {
+  float: left;
+  color: black;
+  font-weight: bold;
+  padding: 10px;
+}
+
+.wrap_title {
+  background: #20939940;
+  width: 100%;
+  float: left;
+  margin-bottom: 5px;
+}
+
+button.remove {
+  border-radius: 50px;
+  float: right;
+  margin-top: 5px;
+  margin-right: 5px;
+  border: none;
+  font-family: 'Montserrat', sans-serif;
+  cursor: pointer;
+}
+
+button.remove:hover {
+  background: #20939940;
+  color: white;
+}
