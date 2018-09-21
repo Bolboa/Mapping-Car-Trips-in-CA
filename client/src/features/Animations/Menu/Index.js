@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import API from "../../../utils/API";
-import "./Menu.css";
+import MenuView from "./MenuView";
 import "../../../styles/App.css";
 
 
@@ -39,11 +39,11 @@ class Menu extends Component {
         menu_titles.push(data.names[i]);
       }
 
-      // Set the new states.
-      this.setState({date_to_name: titles_mapping});
+      // Set states for the menu component.
       this.setState({menu: menu_titles});
+      this.setState({date_to_name: titles_mapping});
 
-      // Pass data to the parent component.
+      // Pass data to the parent component to be used by other components.
       this.props.pass_dates_to_parent(menu_titles, titles_mapping);
       
     })
@@ -71,21 +71,12 @@ class Menu extends Component {
     if (!this.state.menu) {
       return null;
     }
-    
     return (
-      <div className="App">
-      <div className="menu-wrap">
-        <p className="menu-title">Trips</p>
-        <div className="menu">
-          <ul onClick={(e) => this.click_handler(e)} >
-            {this.state.menu && this.state.menu.map((date, index) => {
-              return <li id={date} key={index}>{this.state.date_to_name[date]}</li>;
-            })}
-          </ul>
-        </div>
-      </div>
-        
-      </div>
+        <MenuView
+            click_handler={(e) => this.click_handler(e)}
+            menu={this.state.menu}
+            date_to_name={this.state.date_to_name}
+        />
     );
   }
 }

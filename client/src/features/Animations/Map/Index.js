@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import ReactMapGL from "react-map-gl";
 import * as turf from "@turf/turf";
-import Details from "../Details/Details";
 import API from "../../../utils/API";
 import "./Map.css";
 
@@ -23,11 +22,9 @@ class Map extends Component {
         zoom: 10,
         maxZoom: 15
       },
-      all_trips: {},
       alter: 90,
       time_per_step: 1000,
       doubling_limit: 6,
-      active_trips: new Set()
     };
   }
 
@@ -35,37 +32,29 @@ class Map extends Component {
   /*
   Toggle a trip on the map.
   */
-  toggle_trip = (key) => {
+  toggle_trip = (trip) => {
 
     // Get map.
     const map = this.reactMap.getMap();
 
     // Check if trip is active or not. If it is active, we
     // remove it, otherwise we add it into the pool of active trips.
-    if (this.state.active_trips.has(key) == false) {
+    if (this.props.active_trips.has(trip) == false) {
 
       // Add trip because it is not active.
-      this.setState(({active_trips}) => ({
-        active_trips: new Set(active_trips.add(key))
-      }))
-
+      this.props.controller_add_active_trip(trip);
+      
     }
     else {
 
-        // Remove trip from the pool of active trips.
-        this.setState(({ active_trips }) => {
-        active_trips.delete(key)
-
-        return {
-         active_trips: new Set(active_trips)
-        };
-      });
+      // Remove trip from the pool of active trips.
+      this.props.controller_remove_active_trip(trip);
 
       // Remove trip from the map.
-      map.removeLayer("route"+key);
-      map.removeLayer("point"+key);
-      map.removeSource("route"+key);
-      map.removeSource("point"+key);
+      map.removeLayer("route"+trip);
+      map.removeLayer("point"+trip);
+      map.removeSource("route"+trip);
+      map.removeSource("point"+trip);
       
       return false;
 
@@ -233,7 +222,7 @@ class Map extends Component {
     if (this.toggle_trip(trip) == false) {
 
       // Move to the spot where the car was last seen.
-      this.update_map(this.state.all_trips[trip].lat, this.state.all_trips[trip].long);
+      this.update_map(this.props.all_trips[trip].lat, this.props.all_trips[trip].long);
       
       return
     }
@@ -346,7 +335,7 @@ class Map extends Component {
         // Stop the animation if we reach the end of the route.
         // Also stop the animation if the user requests it to end.
         if (counter < total_dist.length && 
-          this.state.active_trips.has(trip) == true) {
+          this.props.active_trips.has(trip) == true) {
           requestAnimationFrame(animate);
         } 
 
@@ -360,11 +349,11 @@ class Map extends Component {
           seconds -= 1;
 
           // Make copy of immutable object.
-          let new_trip_details = Object.assign({}, this.state.all_trips);
+          let new_trip_details = Object.assign({}, this.props.all_trips);
           let curr_trip = Object.assign({}, new_trip_details[trip]);
           
           // Update speed, coordinates, distance left, and time duration left.
-          curr_trip["speed"] = total_speed[counter];
+          curr_trip["speed"] = total_speed[counter][0];
           curr_trip["lat"] = route.features[0].geometry.coordinates[counter][1];
           curr_trip["long"] = route.features[0].geometry.coordinates[counter][0];
           curr_trip["d_l"] = total_dist[total_dist.length-1] - total_dist[counter];
@@ -372,7 +361,9 @@ class Map extends Component {
 
           // Update the trip details every second.
           new_trip_details[trip] = curr_trip;
-          this.setState({all_trips: new_trip_details});
+
+          // Send details to the controller.
+          this.props.controller_set_trips(new_trip_details);
 
           details_timer = current
 
@@ -424,25 +415,14 @@ class Map extends Component {
   render() {
 
     return (
-      <div>
-        <Details
-          translate={this.props.translate} 
-          status={this.state.active_trips} 
-          mapping={this.state.all_trips} 
-          mapping_handler={(lat, long) => this.update_map(lat, long)} 
-          remove_animation_handler={(key) => this.toggle_trip(key)}
-        />
-
-        <div className="map">
-          <ReactMapGL
-            ref={(reactMap) => { this.reactMap = reactMap; }}
-            {...this.state.viewport}
-            mapStyle={'mapbox://styles/mapbox/basic-v9'}
-            mapboxApiAccessToken={process.env.ACCESS_TOKEN}
-            onViewportChange={(viewport) => this.setState({viewport})}
-          /> 
-        </div>
-      </div>
+      <ReactMapGL
+        className="map"
+        ref={(reactMap) => { this.reactMap = reactMap; }}
+        {...this.state.viewport}
+        mapStyle={'mapbox://styles/mapbox/basic-v9'}
+        mapboxApiAccessToken={process.env.ACCESS_TOKEN}
+        onViewportChange={(viewport) => this.setState({viewport})}
+      /> 
     );
   }
 }
