@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import "./Details.css";
 
@@ -31,9 +31,9 @@ const DetailsView = ({ mapping, active_trips, translate, update_map, toggle_trip
                 </p>
               </div>
             </div>
-            )} 
-          })
-        }
+          )} 
+      })
+    }
     </div>
   </div>
 );

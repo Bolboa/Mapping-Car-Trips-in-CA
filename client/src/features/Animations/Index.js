@@ -11,7 +11,7 @@ This is the intermediary that allows data to be passed between sibling
 components.
 */
 class Animations extends Component {
-
+  
   constructor(props) {
     super(props);
     this.state = {
@@ -19,10 +19,10 @@ class Animations extends Component {
       date_to_name: {},
       all_trips: {},
       active_trips: new Set()
-    }
+    };
   }
 
-
+  
   /*
   Intermediary function to pass data from menu to map.
   */
@@ -44,7 +44,7 @@ class Animations extends Component {
   Allows Details section to update the map.
   */
   update_map = (lat, long) => {
-      this.map.update_map(lat, long);
+    this.map.update_map(lat, long);
   }
 
 
@@ -52,7 +52,7 @@ class Animations extends Component {
   Updates the trip details.
   */
   set_trips = (trips) => {
-      this.setState({all_trips: trips});
+    this.setState({all_trips: trips});
   }
 
 
@@ -63,7 +63,7 @@ class Animations extends Component {
 
     // Add an active trip to the set.
     this.setState(({active_trips}) => {
-        active_trips: new Set(active_trips.add(trip))
+      active_trips: new Set(active_trips.add(trip))
     });
   }
 
@@ -75,11 +75,11 @@ class Animations extends Component {
 
     // Remove an active trip from the set.
     this.setState(({ active_trips }) => {
-        active_trips.delete(trip)
+      active_trips.delete(trip)
 
-        return {
-            active_trips: new Set(active_trips)
-        };
+      return {
+        active_trips: new Set(active_trips)
+      };
     });
   }
 
@@ -88,7 +88,7 @@ class Animations extends Component {
   Allows the Details section to remove a trip.
   */
   toggle_trip = (trip) => {
-      this.map.toggle_trip(trip);
+    this.map.toggle_trip(trip);
   }
 
 
@@ -98,6 +98,8 @@ class Animations extends Component {
         <Menu 
           pass_dates_to_parent={(titles, dates) => this.handle_dates(titles, dates)}  
           onClick={(id) => this.click_handler(id)} 
+          menu={this.state.menu}
+          date_to_name={this.state.date_to_name}
         />
         <Details
           translate={this.state.date_to_name} 
