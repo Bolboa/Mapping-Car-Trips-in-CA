@@ -115,9 +115,9 @@ class Map extends Component {
   create_route = (map, route, id) => {
     
     // Define the route.
-    map.addSource(id, {
-        "type": "geojson",
-        "data": route
+    map.addSource(id, { 
+      "type": "geojson",
+      "data": route 
     });
     
     // Draw the route.
@@ -125,9 +125,9 @@ class Map extends Component {
       "id": id,
       "source": id,
       "type": "line",
-      "paint": {
-          "line-width": 2,
-          "line-color": "#007cbf"
+      "paint": { 
+        "line-width": 2,
+        "line-color": "#007cbf" 
       }
     });
 
@@ -140,27 +140,27 @@ class Map extends Component {
   create_point = (map, point, id, image) => {
 
     // Define the starting coordinate of the point.
-    map.addSource(id, {
+    map.addSource(id, { 
       "type": "geojson",
-      "data": point
+      "data": point 
     });
 
     // Load an image to replace the point.
     map.loadImage(image, function(error, image) {
       if (error) throw error;
       map.addImage("image", image);
-      map.addLayer({
-          "id": id,
-          "type": "symbol",
-          "source": id,
-          "layout": {
-              "icon-image": "image",
-              "icon-rotate": ["get", "bearing"],
-              "icon-rotation-alignment": "map",
-              "icon-size": 0.05,
-              "icon-allow-overlap": true,
-              "icon-ignore-placement": true
-          }
+      map.addLayer({ 
+        "id": id,
+        "type": "symbol",
+        "source": id,
+        "layout": { 
+          "icon-image": "image",
+          "icon-rotate": ["get", "bearing"],
+          "icon-rotation-alignment": "map",
+          "icon-size": 0.05,
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true 
+        }
       });
     });
   }
@@ -229,13 +229,13 @@ class Map extends Component {
     }
 
     // Create API reference.
-    const api = new API({url: process.env.API_URL});
+    const api = new API({ url: process.env.API_URL });
     
     // Query parameter.
     api.create_entity({ name: "trip"});
 
     // GET request for a specific date.
-    api.endpoints.trip.get_one({id: trip})
+    api.endpoints.trip.get_one({ id: trip })
     .then(result => result.json())
     .then(data => {
 
@@ -273,29 +273,29 @@ class Map extends Component {
 
       
       // Define the coordinates of the route being added.
-      var route = {
+      var route = { 
         "type": "FeatureCollection",
-        "features": [{
-            "type": "Feature",
-            "geometry": {
-                "type": "LineString",
-                "coordinates": total_coords
-            }
+        "features": [{ 
+          "type": "Feature",
+          "geometry": { 
+            "type": "LineString",
+            "coordinates": total_coords 
+          }
         }]
       };
 
       // Define the coordinates of the car.
-      var point = {
+      var point = { 
         "type": "FeatureCollection",
-        "features": [{
-            "type": "Feature",
-            "properties": {
-              "description": "<strong>Speed</strong><p>0</p>"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": total_coords[0]
-            }
+        "features": [{ 
+          "type": "Feature",
+          "properties": { 
+            "description": "<strong>Speed</strong><p>0</p>" 
+          },
+          "geometry": { 
+            "type": "Point",
+            "coordinates": total_coords[0] 
+          }
         }]
       };
 
@@ -418,11 +418,11 @@ class Map extends Component {
     return (
       <ReactMapGL
         className="map"
-        ref={(reactMap) => { this.reactMap = reactMap; }}
-        {...this.state.viewport}
+        ref={ (reactMap) => { this.reactMap = reactMap; } }
+        { ...this.state.viewport }
         mapStyle={"mapbox://styles/mapbox/basic-v9"}
-        mapboxApiAccessToken={process.env.ACCESS_TOKEN}
-        onViewportChange={(viewport) => this.setState({viewport})}
+        mapboxApiAccessToken={ process.env.ACCESS_TOKEN }
+        onViewportChange={ (viewport) => this.setState({ viewport }) }
       /> 
     );
   }

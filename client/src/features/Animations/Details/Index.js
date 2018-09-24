@@ -29,10 +29,10 @@ class Details extends Component {
           
     return (
       <DetailsView
-        mapping={this.props.mapping}
-        active_trips={this.props.active_trips}
-        translate={this.props.translate}
-        update_map={ (lat, long) => this.update_map(lat, long)}
+        mapping={ this.props.mapping }
+        active_trips={ this.props.active_trips }
+        translate={ this.props.translate }
+        update_map={ (lat, long) => this.update_map(lat, long) }
         toggle_trip={ (key) => this.toggle_trip(key) }
       />
     );

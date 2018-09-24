@@ -27,8 +27,12 @@ class Animations extends Component {
   Intermediary function to pass data from menu to map.
   */
   handle_dates = (titles, dates) => {
-    this.setState({menu: titles});
-    this.setState({date_to_name: dates});
+    
+    this.setState({ 
+      menu: titles,
+      date_to_name: dates 
+    });
+
   }
 
 
@@ -52,7 +56,7 @@ class Animations extends Component {
   Updates the trip details.
   */
   set_trips = (trips) => {
-    this.setState({all_trips: trips});
+    this.setState({ all_trips: trips });
   }
 
 
@@ -62,7 +66,7 @@ class Animations extends Component {
   add_active_trip = (trip) => {
 
     // Add an active trip to the set.
-    this.setState(({active_trips}) => {
+    this.setState(({ active_trips }) => {
       active_trips: new Set(active_trips.add(trip))
     });
   }
@@ -96,27 +100,27 @@ class Animations extends Component {
     return (
       <div className="App">
         <Menu 
-          pass_dates_to_parent={(titles, dates) => this.handle_dates(titles, dates)}  
-          onClick={(id) => this.click_handler(id)} 
-          menu={this.state.menu}
-          date_to_name={this.state.date_to_name}
+          pass_dates_to_parent={ (titles, dates) => this.handle_dates(titles, dates) }  
+          onClick={ (id) => this.click_handler(id) } 
+          menu={ this.state.menu }
+          date_to_name={ this.state.date_to_name }
         />
         <Details
-          translate={this.state.date_to_name} 
-          active_trips={this.state.active_trips} 
-          mapping={this.state.all_trips} 
-          controller_update_map={(lat, long) => this.update_map(lat, long)} 
-          controller_toggle_trip={(trip) => this.toggle_trip(trip)}
+          translate={ this.state.date_to_name } 
+          active_trips={ this.state.active_trips } 
+          mapping={ this.state.all_trips } 
+          controller_update_map={ (lat, long) => this.update_map(lat, long) } 
+          controller_toggle_trip={ (trip) => this.toggle_trip(trip) }
         />
         <Map 
-          translate={this.state.date_to_name}
-          all_trips={this.state.all_trips}
-          active_trips={this.state.active_trips} 
-          controller_set_trips={(trips) => this.set_trips(trips)}
-          controller_toggle_trip={(trip) => this.toggle_trip(trip)}
-          controller_add_active_trip={(trip) => this.add_active_trip(trip)}
-          controller_remove_active_trip={(trip) => this.remove_active_trip(trip)}
-          ref={instance => { this.map = instance; }} 
+          translate={ this.state.date_to_name }
+          all_trips={ this.state.all_trips }
+          active_trips={ this.state.active_trips } 
+          controller_set_trips={ (trips) => this.set_trips(trips) }
+          controller_toggle_trip={ (trip) => this.toggle_trip(trip) }
+          controller_add_active_trip={ (trip) => this.add_active_trip(trip) }
+          controller_remove_active_trip={ (trip) => this.remove_active_trip(trip) }
+          ref={ instance => { this.map = instance; } } 
         />
       </div>
     );

@@ -8,9 +8,9 @@ const MenuView = ({ click_handler, menu, date_to_name }) => (
     <div className="menu-wrap">
       <p className="menu-title">Trips</p>
       <div className="menu">
-        <ul onClick={(e) => click_handler(e)} >
-          {menu && menu.map((date, index) => {
-            return <li id={date} key={index}>{date_to_name[date]}</li>;
+        <ul onClick={ (e) => click_handler(e) } >
+          { menu && menu.map((date, index) => {
+            return <li id={ date } key={ index }>{ date_to_name[date] }</li>;
           })}
         </ul>
       </div>

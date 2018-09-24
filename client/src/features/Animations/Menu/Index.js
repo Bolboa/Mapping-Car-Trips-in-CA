@@ -14,10 +14,10 @@ class Menu extends Component {
   componentDidMount() {
     
     // Create API reference.
-    const api = new API({url: process.env.API_URL});
+    const api = new API({ url: process.env.API_URL });
     
     // Query parameter.
-    api.create_entity({ name: "dates"});
+    api.create_entity({ name: "dates" });
 
     // GET request for all dates.
     api.endpoints.dates.get_all()
@@ -65,9 +65,9 @@ class Menu extends Component {
     }
     return (
         <MenuView
-            click_handler={(e) => this.click_handler(e)}
-            menu={this.props.menu}
-            date_to_name={this.props.date_to_name}
+            click_handler={ (e) => this.click_handler(e) }
+            menu={ this.props.menu }
+            date_to_name={ this.props.date_to_name }
         />
     );
   }
