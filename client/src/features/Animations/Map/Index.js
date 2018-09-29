@@ -230,9 +230,14 @@ class Map extends Component {
 
     // Create API reference.
     const api = new API({ url: process.env.API_URL });
+
+    // Define the headers.
+    let headers = new Headers();
+    headers.append("Content-Type", "application/json");
+    headers.append("Accept", "application/json");
     
     // Query parameter.
-    api.create_entity({ name: "trip"});
+    api.create_entity({ name: "trip"}, headers);
 
     // GET request for a specific date.
     api.endpoints.trip.get_one({ id: trip })

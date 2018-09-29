@@ -15,9 +15,14 @@ class Menu extends Component {
     
     // Create API reference.
     const api = new API({ url: process.env.API_URL });
+
+    // Define the headers.
+    let headers = new Headers();
+    headers.append("Content-Type", "application/json");
+    headers.append("Accept", "application/json");
     
     // Query parameter.
-    api.create_entity({ name: "dates" });
+    api.create_entity({ name: "dates" }, headers);
 
     // GET request for all dates.
     api.endpoints.dates.get_all()

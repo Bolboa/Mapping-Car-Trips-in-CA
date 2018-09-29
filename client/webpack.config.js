@@ -26,8 +26,8 @@ module.exports = {
           {
             loader: 'file-loader',
             options: {
-            	name: '[path][name].[ext]',
-    			outputPath: 'images/'
+              name: '[path][name].[ext]',
+          outputPath: 'images/'
             }
           }
         ]
@@ -39,11 +39,11 @@ module.exports = {
       template: "./src/index.html"
     }),
     new webpack.DefinePlugin({
-    	"process.env": {
+      "process.env": {
         NODE_ENV: JSON.stringify(process.env.NODE_ENV),
         API_URL: JSON.stringify(process.env.API_URL),
         ACCESS_TOKEN: JSON.stringify(process.env.ACCESS_TOKEN)
       }
-  	})
+    })
   ]
 };
