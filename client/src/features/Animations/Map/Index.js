@@ -1,5 +1,9 @@
 import React, { Component } from "react";
 import ReactMapGL from "react-map-gl";
+import { connect } from "react-redux";
+import { toggle_details } from "../actions/index";
+import { update_map, update_trip } from "./map_action";
+import { update_map_by_key, update_map_by_coord } from "../actions/index"; 
 import * as turf from "@turf/turf";
 import API from "../../../utils/API";
 import "./Map.css";
@@ -9,19 +13,29 @@ import "./Map.css";
 const car = require("./resources/merc.png");
 
 
-class Map extends Component {
+const mapStateToProps = state => {
+  return { 
+    view_details: state.view_details,
+    map_configuration: state.map_configuration
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    toggle_details: (key) => dispatch(toggle_details(key)),
+    update_map: (details) => dispatch(update_map(details)),
+    update_trip: (all_trips) => dispatch(update_trip(all_trips)),
+    update_map_by_key: (key) => dispatch(update_map_by_key(key)),
+    update_map_by_coord: (lat, long) => dispatch(update_map_by_coord(lat, long))
+  };
+}
+
+
+class ConnectedMap extends Component {
   
   constructor(props) {
     super(props);
     this.state = {
-      viewport: {
-        width:window.innerWidth,
-        height:window.innerHeight,
-        latitude: 37.36531661007267,
-        longitude: -122.40431714930452,
-        zoom: 10,
-        maxZoom: 15
-      },
       alter: 90,
       time_per_step: 1000,
       doubling_limit: 6,
@@ -30,35 +44,51 @@ class Map extends Component {
 
 
   /*
-  Toggle a trip on the map.
+  Check if the redux states have updated.
   */
-  toggle_trip = (trip) => {
+  componentWillReceiveProps = (nextprops) => {
+    
+    // Check if trip is active or not.
+    if (nextprops.view_details.active_trips.has(nextprops.view_details.curr)) {
+
+      // If there is a change in state, 
+      // then we need to activate the trip because
+      // this means it changed from not active to active.
+      if (this.props.view_details.active_trips !== nextprops.view_details.active_trips) {
+        this.get_trip(nextprops.view_details.curr);
+      }
+    }
+    else {
+
+      // If there is a change in state,
+      // we remove the trip because this means the trip
+      // changed states from active to not active.
+      if (this.props.view_details.active_trips !== nextprops.view_details.active_trips) {
+        this.remove_trip(nextprops.view_details.curr);
+      }
+      
+    }
+  }
+
+
+  /*
+  Remove a trip.
+  */
+  remove_trip = (trip) => {
+
+    // Move to the location where the car was
+    // last seen.
+    this.props.update_map_by_key(trip);
 
     // Get map.
     const map = this.reactMap.getMap();
 
-    // Check if trip is active or not. If it is active, we
-    // remove it, otherwise we add it into the pool of active trips.
-    if (this.props.active_trips.has(trip) == false) {
+    // Remove the animation from the map.
+    map.removeLayer("route"+trip);
+    map.removeLayer("point"+trip);
+    map.removeSource("route"+trip);
+    map.removeSource("point"+trip);
 
-      // Add trip because it is not active.
-      this.props.controller_add_active_trip(trip);
-      
-    }
-    else {
-
-      // Remove trip from the pool of active trips.
-      this.props.controller_remove_active_trip(trip);
-
-      // Remove trip from the map.
-      map.removeLayer("route"+trip);
-      map.removeLayer("point"+trip);
-      map.removeSource("route"+trip);
-      map.removeSource("point"+trip);
-      
-      return false;
-
-    }
   }
 
 
@@ -91,20 +121,6 @@ class Map extends Component {
 
     // Return result.
     return [long3 * 180/Math.PI, lat3 * 180/Math.PI];
-
-  }
-
-
-  /*
-  Move the map to a specific set of coordinates.
-  */
-  update_map = (lat, long) => {
-
-    // Change the viewport to the current trip selected.
-    let new_viewport = Object.assign({}, this.state.viewport);
-    new_viewport.latitude = lat;
-    new_viewport.longitude = long;
-    this.setState({viewport: new_viewport});
 
   }
 
@@ -166,7 +182,7 @@ class Map extends Component {
   }
 
 
-    /*
+  /*
   Calculate the amount of time left for a point to reach its destination.
   */
   duration = (delta) => {
@@ -216,17 +232,6 @@ class Map extends Component {
     // Get map details.
     const map = this.reactMap.getMap();
 
-    // We must keep track of how many times the button to create a trip is pressed.
-    // The first time it is pressed, we must create a trip. The second time it is pressed, we
-    // must remove the trip if still exits.
-    if (this.toggle_trip(trip) == false) {
-
-      // Move to the spot where the car was last seen.
-      this.update_map(this.props.all_trips[trip].lat, this.props.all_trips[trip].long);
-      
-      return;
-
-    }
 
     // Create API reference.
     const api = new API({ url: process.env.API_URL });
@@ -274,7 +279,7 @@ class Map extends Component {
       
       
       // Change the viewport to the newest trip added.
-      this.update_map(total_coords[0][1], total_coords[0][0]);
+      this.props.update_map_by_coord(total_coords[0][1], total_coords[0][0]);
 
       
       // Define the coordinates of the route being added.
@@ -334,14 +339,13 @@ class Map extends Component {
 
       let details_timer = 0;
 
-
       // Animation.
       const animate = (current) => {  
-        
+
         // Stop the animation if we reach the end of the route.
         // Also stop the animation if the user requests it to end.
         if (counter < total_dist.length && 
-          this.props.active_trips.has(trip) == true) {
+          this.props.view_details.active_trips.has(trip) == true) {
           requestAnimationFrame(animate);
         } 
 
@@ -355,7 +359,7 @@ class Map extends Component {
           seconds -= 1;
 
           // Make copy of immutable object.
-          let new_trip_details = Object.assign({}, this.props.all_trips);
+          let new_trip_details = Object.assign({}, this.props.map_configuration.all_trips);
           let curr_trip = Object.assign({}, new_trip_details[trip]);
           
           // Update speed, coordinates, distance left, and time duration left.
@@ -368,8 +372,8 @@ class Map extends Component {
           // Update the trip details every second.
           new_trip_details[trip] = curr_trip;
 
-          // Send details to the controller.
-          this.props.controller_set_trips(new_trip_details);
+          // Update the trip details.
+          this.props.update_trip(new_trip_details);
 
           details_timer = current;
 
@@ -408,11 +412,8 @@ class Map extends Component {
       animate();
         
     })
-    .catch(e => {
-
-      console.log(e);
-      return e;
-
+    .catch(err => {
+      throw err;
     });
 
   }
@@ -424,13 +425,16 @@ class Map extends Component {
       <ReactMapGL
         className="map"
         ref={ (reactMap) => { this.reactMap = reactMap; } }
-        { ...this.state.viewport }
+        { ...this.props.map_configuration.viewport }
         mapStyle={"mapbox://styles/mapbox/basic-v9"}
         mapboxApiAccessToken={ process.env.ACCESS_TOKEN }
-        onViewportChange={ (viewport) => this.setState({ viewport }) }
+        onViewportChange={ (viewport) => this.props.update_map(viewport) }
       /> 
     );
   }
 }
+
+
+const Map = connect(mapStateToProps, mapDispatchToProps)(ConnectedMap);
 
 export default Map;

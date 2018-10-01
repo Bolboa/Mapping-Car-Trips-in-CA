@@ -1,5 +1,10 @@
-import Animations from "../features/Animations/Index";
-
+import React, { Component } from "react";
+import Animation from "./Animation";
 import "../styles/App.css";
 
-export default Animations;
+
+const Home = () => (
+  <Animation />
+);
+
+export default Home;
