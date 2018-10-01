@@ -6,6 +6,7 @@ Accurately mapping car trips in California.
 
 ## Technologies
 * React
+* Redux (React-Redux)
 * Python (Flask)
 * MongoDB
 * MapBox (react-map-gl)
