@@ -24,14 +24,15 @@ export const fetch_menu = () => {
     
     // Get all the menu values.
     return api.endpoints.dates.get_all()
-        .then(result => result.json())
-        .then(data => {
+      .then(result => result.json())
+      .then(data => {
           
-          // Request is successful.
-          dispatch(fetch_products_success(data));
+        // Request is successful.
+        dispatch(fetch_products_success(data));
 
-        })
-        .catch(err => dispatch(fetch_products_failure(err)));
+      })
+      .catch(err => dispatch(fetch_products_failure(err)));
+      
   }
 }
 
